@@ -1,0 +1,8 @@
+# Security scanning and container hardening configuration
+
+# Trivy ignore file for known false positives
+# Add CVE IDs here to suppress in CI scans
+# Example: CVE-2023-12345
+
+# The following are acceptable risks in distroless base:
+# (none currently)

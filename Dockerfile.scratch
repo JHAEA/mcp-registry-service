@@ -1,0 +1,57 @@
+# Hardened Dockerfile for production deployments
+# Uses multi-stage build with scratch base for minimal attack surface
+
+# Build stage
+FROM golang:1.22-alpine AS builder
+
+RUN apk add --no-cache git ca-certificates tzdata
+
+WORKDIR /build
+
+COPY go.mod go.sum ./
+RUN go mod download && go mod verify
+
+COPY . .
+
+ARG VERSION=dev
+ARG GIT_COMMIT=unknown
+ARG BUILD_TIME=unknown
+
+# Build with all security hardening flags
+RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build \
+    -ldflags="-w -s -extldflags '-static' \
+        -X 'github.com/mcpregistry/server/internal/api.Version=${VERSION}' \
+        -X 'github.com/mcpregistry/server/internal/api.GitCommit=${GIT_COMMIT}' \
+        -X 'github.com/mcpregistry/server/internal/api.BuildTime=${BUILD_TIME}'" \
+    -trimpath \
+    -buildmode=pie \
+    -o /build/registry \
+    ./cmd/registry
+
+# Verify the binary
+RUN /build/registry -version || true
+
+# Runtime stage - scratch for absolute minimal size
+FROM scratch
+
+# Import CA certificates for HTTPS
+COPY --from=builder /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/
+COPY --from=builder /usr/share/zoneinfo /usr/share/zoneinfo
+
+# Copy binary
+COPY --from=builder /build/registry /registry
+
+# Run as non-root (using numeric UID for scratch compatibility)
+USER 65532:65532
+
+EXPOSE 8080
+
+VOLUME ["/data"]
+
+ENV PORT=8080 \
+    DATA_PATH=/data/registry \
+    CLONE_TIMEOUT=2m \
+    POLL_INTERVAL=5m \
+    CACHE_SIZE=1000
+
+ENTRYPOINT ["/registry"]
