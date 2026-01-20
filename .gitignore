@@ -1,0 +1,49 @@
+# Binaries
+/registry
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binary
+*.test
+
+# Output
+/bin/
+/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local
+*.env
+
+# Secrets
+/secrets/
+*.pem
+*.key
+
+# Data
+/data/
+
+# Coverage
+coverage.out
+coverage.html
+
+# Vendor (if not vendoring)
+/vendor/
+
+# Temporary
+tmp/
+*.tmp
+*.log
+examples/

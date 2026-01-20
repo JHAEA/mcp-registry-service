@@ -1,0 +1,69 @@
+# Docker Compose for local development
+services:
+  registry:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VERSION: dev
+        GIT_COMMIT: local
+        BUILD_TIME: "${BUILD_TIME:-unknown}"
+    ports:
+      - "8080:8080"
+    environment:
+      - REGISTRY_REPO_URL=${REGISTRY_REPO_URL}
+      - REGISTRY_BRANCH=${REGISTRY_BRANCH:-main}
+      - GITHUB_APP_ID=${GITHUB_APP_ID}
+      - GITHUB_APP_PRIVATE_KEY_PATH=/secrets/github-app-key.pem
+      - GITHUB_INSTALLATION_ID=${GITHUB_INSTALLATION_ID}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET}
+      - POLL_INTERVAL=1m
+      - CLONE_TIMEOUT=2m
+      - CACHE_SIZE=1000
+      - DATA_PATH=/data/registry
+      - OTLP_ENDPOINT=jaeger:4317
+      - PORT=8080
+    volumes:
+      - registry-data:/data
+      - ./secrets:/secrets:ro
+    depends_on:
+      - jaeger
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost:8080/v0.1/ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    restart: unless-stopped
+    # Security options
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.53
+    ports:
+      - "16686:16686"  # Jaeger UI
+      - "4317:4317"    # OTLP gRPC
+      - "4318:4318"    # OTLP HTTP
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    restart: unless-stopped
+
+  # Optional: ngrok for webhook testing
+  ngrok:
+    image: ngrok/ngrok:latest
+    command: http registry:8080
+    ports:
+      - "4040:4040"
+    environment:
+      - NGROK_AUTHTOKEN=${NGROK_AUTHTOKEN:-}
+    profiles:
+      - webhook-testing
+
+volumes:
+  registry-data:
