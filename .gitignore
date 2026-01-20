@@ -47,3 +47,6 @@ tmp/
 *.tmp
 *.log
 examples/
+
+# Local scripts with secrets
+run-local.sh

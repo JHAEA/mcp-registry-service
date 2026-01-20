@@ -1,0 +1,27 @@
+#!/bin/bash
+# Local development script for MCP Registry Server
+# Copy this to run-local.sh and fill in your values
+
+set -e
+
+cd "$(dirname "$0")"
+
+# Export environment variables
+export REGISTRY_REPO_URL="https://github.com/YOUR_ORG/YOUR_REGISTRY_REPO"
+export GITHUB_APP_ID="YOUR_APP_ID"
+export GITHUB_INSTALLATION_ID="YOUR_INSTALLATION_ID"
+export GITHUB_APP_PRIVATE_KEY_PATH="./secrets/github-app-key.pem"
+export WEBHOOK_SECRET="YOUR_WEBHOOK_SECRET"
+export REGISTRY_BRANCH="main"
+export PORT="8080"
+export DATA_PATH="./data/registry"
+export CLONE_TIMEOUT="2m"
+export POLL_INTERVAL="1m"
+export CACHE_SIZE="1000"
+
+echo "Starting MCP Registry Server..."
+echo "  Repository: $REGISTRY_REPO_URL"
+echo "  Port: $PORT"
+echo ""
+
+go run ./cmd/registry
