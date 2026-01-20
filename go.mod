@@ -4,7 +4,7 @@ go 1.24.0
 
 require (
 	github.com/bradleyfalzon/ghinstallation/v2 v2.17.0
-	github.com/go-chi/chi/v5 v5.1.0
+	github.com/go-chi/chi/v5 v5.2.4
 	github.com/go-git/go-git/v5 v5.12.0
 	github.com/go-playground/validator/v10 v10.30.1
 	github.com/hashicorp/golang-lru/v2 v2.0.7
