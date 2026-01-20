@@ -84,7 +84,7 @@ jobs:
           CGO_ENABLED=0 go build -ldflags="-w -s" -trimpath -o registry ./cmd/registry
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: registry-binary
           path: registry
